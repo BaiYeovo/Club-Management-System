@@ -1,0 +1,26 @@
+{% extends "management/base.html" %}
+{% block content %}
+    <div class="container">
+        <h2>我加入的社团</h2>
+        <div class="list-group">
+            {% for m in memberships %}
+                <div class="list-group-item clearfix">
+                    <div class="pull-left">
+                        <h4 class="list-group-item-heading">{{ m.club.name }}</h4>
+                        <p class="list-group-item-text text-muted">加入时间：{{ m.join_date|date:"Y-m-d" }}</p>
+                    </div>
+                    <div class="pull-right" style="margin-top: 10px;">
+                        <a href="{% url 'club_detail' m.club.id %}" class="btn btn-default">详情</a>
+                        {% if m.club.president_id == user.pk or user.is_staff %}
+                        <a href="{% url 'club_manager' m.club.id %}" class="btn btn-primary">管理</a>
+                        {% endif %}
+                        <form method="post" action="{% url 'quit_club' m.club.id %}" class="action-form" onsubmit="return confirm('确定退出？')">{% csrf_token %}<button type="submit"  class="btn btn-danger"
+                           >退出</button></form>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="well text-center">您还没有加入任何社团，快去探索吧！</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}注册新账号{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/auth.css' %}">
+<style>
+    /* 样式增强 */
+    .register-container { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 180px); padding: 20px; }
+    .register-card { width: 100%; max-width: 450px; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .register-title { text-align: center; margin-bottom: 25px; font-weight: bold; color: #333; }
+    .btn-register { width: 100%; padding: 12px; background-color: #5cb85c; color: white; border: none; border-radius: 4px; font-size: 16px; transition: 0.3s; }
+    .btn-register:hover { background-color: #449d44; }
+    .login-link { text-align: center; margin-top: 20px; color: #666; }
+
+    /* 实时验证样式 */
+    .has-error .form-control { border-color: #a94442; box-shadow: inset 0 1px 1px rgba(0,0,0,.075); }
+    .error-text { color: #a94442; font-size: 12px; margin-top: 5px; display: block; }
+    .form-group { position: relative; margin-bottom: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card fade-in">
+        <h1 class="register-title">创建账号</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}info{% endif %} alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'signup' %}" id="signupForm" class="register-form">
+            {% csrf_token %}
+            {{ form.errors }}
+
+            <div class="form-group">
+                <label for="id_student_id" class="form-label">学号</label>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-tag"></i></span>
+                    <input type="text" class="form-control" id="id_student_id" required name="student_id"
+                           autofocus placeholder="请输入学号">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="id_name" class="form-label">真实姓名</label>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                    <input type="text" class="form-control" required name="nickname" id="id_name"
+                           placeholder="请输入您的真实姓名">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="id_email" class="form-label">电子邮件</label>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+                    <input type="email" class="form-control" required name="email" id="id_email"
+                           placeholder="请输入常用邮箱">
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="form-group">
+                <label for="id_passwd" class="form-label">设置密码</label>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                    <input type="password" class="form-control" required name="password" id="id_passwd"
+                           placeholder="至少8位，避免常见或纯数字密码">
+                </div>
+            </div>
+
+            <div class="form-group" id="repass-group">
+                <label for="id_repasswd" class="form-label">确认密码</label>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-refresh"></i></span>
+                    <input type="password" class="form-control" required name="repeat_password"
+                           id="id_repasswd" placeholder="请再次输入密码">
+                </div>
+                <span class="error-text" id="repass-error" style="display: none;">两次输入的密码不一致</span>
+            </div>
+
+            <button type="submit" class="btn-register" id="submitBtn">
+                <i class="glyphicon glyphicon-plus"></i> 立即注册
+            </button>
+
+            <div class="login-link">
+                已有账号？ <a href="{% url 'login' %}">立即登录</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function() {
+        // 输入框焦点样式
+        $('.form-control').on('focus', function() {
+            $(this).closest('.form-group').addClass('focused');
+        }).on('blur', function() {
+            $(this).closest('.form-group').removeClass('focused');
+        });
+
+        const $password = $('#id_passwd');
+        const $rePassword = $('#id_repasswd');
+        const $rePassGroup = $('#repass-group');
+        const $rePassError = $('#repass-error');
+        const $submitBtn = $('#submitBtn');
+
+        // 实时密码一致性验证
+        function validatePassword() {
+            const val1 = $password.val();
+            const val2 = $rePassword.val();
+
+            if (val2 && val1 !== val2) {
+                $rePassGroup.addClass('has-error');
+                $rePassError.show();
+                return false;
+            } else {
+                $rePassGroup.removeClass('has-error');
+                $rePassError.hide();
+                return true;
+            }
+        }
+
+        $rePassword.on('input', validatePassword);
+        $password.on('input', function() {
+            if ($rePassword.val()) validatePassword();
+        });
+
+        // 提交表单前的最终检查
+        $('#signupForm').on('submit', function(e) {
+            if (!validatePassword()) {
+                e.preventDefault();
+                $rePassword.focus();
+            }
+        });
+    });
+</script>
+{% endblock %}

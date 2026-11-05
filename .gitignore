@@ -1,0 +1,56 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.idea/
+.vscode/
+.venv/
+staticfiles/
+.backups/
+media/
+*.log
+*.sqlite3
+
+# Local databases and database exports (initialize with Django migrations)
+*.sql
+*.sql.gz
+*.dump
+*.db
+*.sqlite
+*.sqlite3-*
+
+# Virtual environments, test output, and local tooling
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+.codex/
+.agents/
+
+# Credentials and private keys
+.envrc
+.netrc
+.pypirc
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Temporary files and OS metadata
+*.bak
+*.tmp
+*.swp
+~$*
+.DS_Store
+Thumbs.db
+Desktop.ini

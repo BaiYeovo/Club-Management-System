@@ -1,0 +1,220 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}首页 - 校园社团管理系统{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/hero.css' %}">
+<style>
+    /* 1. 首页特有的全屏英雄区修复 */
+    .hero-section-full {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        margin-top: -20px;
+        border-radius: 0 !important;
+    }
+
+    /* 2. 统计卡片：更轻盈的玻璃拟态 */
+    .stats-card {
+        background: white;
+        padding: 40px 20px;
+        border-radius: 20px;
+        border: 1px solid #f1f5f9;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        margin-bottom: 30px;
+    }
+    .stats-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+    }
+    .stats-number { font-size: 3.5rem; font-weight: 800; line-height: 1; margin-bottom: 10px; }
+    .stats-label { color: #64748b; font-weight: 600; letter-spacing: 1px; }
+
+    /* 3. 核心功能板块改版：侧重于“动作”和“探索” */
+    .action-card {
+        background: white;
+        border-radius: 24px;
+        padding: 40px 30px;
+        height: 100%;
+        border: 1px solid #f1f5f9;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        text-align: left;
+    }
+    .action-card:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1);
+    }
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 25px;
+        transition: all 0.4s;
+    }
+    .action-card:hover .action-icon {
+        transform: scale(1.1) rotate(-5deg);
+    }
+    .action-title { font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 15px; }
+    .action-text { color: #64748b; line-height: 1.6; margin-bottom: 20px; font-size: 14px; }
+
+    .action-link {
+        font-weight: 700;
+        color: #3b82f6;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .action-link:hover { text-decoration: underline; }
+
+    /* 背景装饰装饰 */
+    .bg-decoration {
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        font-size: 100px;
+        opacity: 0.03;
+        transform: rotate(-15deg);
+    }
+</style>
+{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+    <section class="hero-section hero-section-full fade-in">
+        <div class="container text-center">
+            <h1 class="hero-title">高校社团管理系统</h1>
+            <p class="hero-lead">
+                一站式校园社团综合服务平台。从成员招募到活动发布，通过数字化手段简化运营流程，让每一份热爱都能高效落地。
+            </p>
+
+            <div class="row justify-content-center">
+                {% if user.is_authenticated %}
+                    {% with presided_clubs=user.presided_clubs.all %}
+                        {% if presided_clubs %}
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary btn-lg btn-round dropdown-toggle" data-toggle="dropdown">
+                                    <i class="glyphicon glyphicon-cog"></i> 管理我的社团 <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for club in presided_clubs %}
+                                        <li><a href="{% url 'club_manager' club.id %}">{{ club.name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'view_club_list' %}" class="btn btn-primary btn-lg btn-round">
+                                <i class="glyphicon glyphicon-search"></i> 寻找社团
+                            </a>
+                        {% endif %}
+                    {% endwith %}
+                    <a href="{% url 'activity_list' %}" class="btn btn-default btn-lg btn-round" style="margin-left: 10px; background: white; border: 1px solid #e2e8f0;">发现活动</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg btn-round">登录</a>
+                    <a href="{% url 'signup' %}" class="btn btn-default btn-lg btn-round" style="margin-left: 10px; background: white;">注册</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="row" style="margin-top: -60px; position: relative; z-index: 10;">
+            <div class="col-md-4">
+                <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #3b82f6;">{{ club_count|default:"0" }}</div>
+                    <div class="stats-label">活跃社团</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #8b5cf6;">{{ activity_count|default:"0" }}</div>
+                    <div class="stats-label">精彩活动</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #10b981;">{{ student_count|default:"0" }}</div>
+                    <div class="stats-label">注册人数</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 20px 0;">
+            <div class="text-center mb-5">
+                <h2 style="font-weight: 800; color: #1e293b; margin-bottom: 15px;">系统功能</h2>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="action-card">
+                        <div class="action-icon" style="background: #eff6ff; color: #3b82f6;">
+                            <i class="glyphicon glyphicon-flash"></i>
+                        </div>
+                        <h3 class="action-title">发现热门活动</h3>
+                        <p class="action-text">
+                            从学术讲座到草地音乐节，实时掌握校园内正在发生的一切精彩。不再错过任何提升自我与结识新友的机会。
+                        </p>
+                        <a href="{% url 'activity_list' %}" class="action-link">立即前往探索 &rarr;</a>
+                        <i class="glyphicon glyphicon-flash bg-decoration"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <div class="action-card">
+                        <div class="action-icon" style="background: #f0fdf4; color: #10b981;">
+                            <i class="glyphicon glyphicon-send"></i>
+                        </div>
+                        <h3 class="action-title">寻找志趣相投</h3>
+                        <p class="action-text">
+                            浏览全校各类社团名录，查看社团风采与日常。无论你喜欢电子竞技还是非遗文化，总有一个地方属于你。
+                        </p>
+                        <a href="{% url 'view_club_list' %}" class="action-link">查看全部社团 &rarr;</a>
+                        <i class="glyphicon glyphicon-send bg-decoration"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4">
+                    <div class="action-card">
+                        <div class="action-icon" style="background: #fff7ed; color: #f59e0b;">
+                            <i class="glyphicon glyphicon-home"></i>
+                        </div>
+                        <h3 class="action-title">我的社团空间</h3>
+                        <p class="action-text">
+                            查看你已加入的社团动态，参与内部讨论，或管理你所负责的社团事务。这是你在校园里的专属精神家园。
+                        </p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'my_clubs' %}" class="action-link">进入我的社团 &rarr;</a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="action-link">登录后查看 &rarr;</a>
+                        {% endif %}
+                        <i class="glyphicon glyphicon-home bg-decoration"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_staff %}
+        <div class="well fade-in" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; padding: 40px; margin-top: 40px;">
+            <div class="row align-items-center">
+                <div class="col-md-8 text-left">
+                    <h4 style="color: #1e293b; font-weight: 700;">系统管理员工作站</h4>
+                    <p style="color: #64748b; margin-bottom: 0;">您拥有全站管理权限，可进行用户审计、分类配置及内容终审。</p>
+                </div>
+                <div class="col-md-4 text-right">
+                    <a href="/admin/" class="btn btn-primary" style="padding: 12px 30px; border-radius: 12px; font-weight: 600;">进入后台</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}社团详情 - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 30px;">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default" style="border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: none;">
+                <div class="panel-body" style="padding: 40px 30px;">
+
+                    <div class="col-md-5">
+                        {% if club_images %}
+                            <div id="club-carousel" class="carousel slide" data-ride="carousel" style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                <div class="carousel-inner">
+                                    {% for img in club_images %}
+                                    <div class="item {% if forloop.first %}active{% endif %}">
+                                        <img src="{{ img.image.url }}" alt="社团照片" style="width: 100%; height: 350px; object-fit: cover;">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% if club_images.count > 1 %}
+                                <a class="left carousel-control" href="#club-carousel" data-slide="prev">
+                                    <span class="glyphicon glyphicon-chevron-left"></span>
+                                </a>
+                                <a class="right carousel-control" href="#club-carousel" data-slide="next">
+                                    <span class="glyphicon glyphicon-chevron-right"></span>
+                                </a>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="well text-center" style="min-height: 350px; display: flex; align-items: center; justify-content: center; flex-direction: column; background-color: #fcfcfc; border: 1px dashed #ddd; border-radius: 12px;">
+                                <i class="glyphicon glyphicon-picture" style="font-size: 80px; color: #e2e8f0;"></i>
+                                <h3 style="margin-top: 20px; color: #64748b; font-weight: bold;">{{ club.name }}</h3>
+                                <p class="text-muted small">暂无宣传照片</p>
+                                <span class="label label-default" style="margin-top: 10px; padding: 5px 12px;">{{ club.category }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 col-md-offset-1">
+                        <h2 style="margin-top: 0; font-weight: 800; color: #1e293b;">{{ club.name }}</h2>
+                        <div style="margin-bottom: 20px;">
+                            <span class="label label-primary">{{ club.category }}</span>
+                            <span class="text-muted" style="margin-left: 10px;"><i class="glyphicon glyphicon-time"></i> 成立于 {{ club.establish_date|date:"Y-m-d" }}</span>
+                        </div>
+                        <hr>
+
+                        <p><strong><i class="glyphicon glyphicon-info-sign" style="color: #4a90e2;"></i> 社团简介：</strong></p>
+                        <div style="line-height: 1.8; color: #475569; min-height: 80px; margin-bottom: 20px; font-size: 15px;">
+                            {{ club.detail|default:"该社团很神秘，暂未发布详细介绍。"|linebreaks }}
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <p style="margin-bottom: 10px;">
+                                <b><i class="glyphicon glyphicon-user"></i> 社长：</b>
+                                {% if club.president %}
+                                    <span class="text-dark">{{ club.president.nickname }}</span>
+                                    <small class="text-muted">(学号: {{ club.president.student_id }})</small>
+                                {% else %}
+                                    <span class="text-danger">暂未指派</span>
+                                {% endif %}
+                            </p>
+                            <p style="margin-bottom: 0;"><b><i class="glyphicon glyphicon-record"></i> 现有成员：</b> <span class="badge" style="background-color: #3b82f6;">{{ club.member_count }} 人</span></p>
+                        </div>
+
+                        <hr>
+
+                        <div class="interaction-area">
+                            {% if user.is_authenticated %}
+                                {% if is_member %}
+                                    <div class="member-actions">
+                                        <div class="alert alert-success text-center" style="border-radius: 8px; font-weight: 600;">
+                                            <i class="glyphicon glyphicon-ok-sign"></i> 您是该社团成员
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-6">
+                                                <a href="{% url 'show_members' club.id %}" class="btn btn-info btn-block" style="border-radius: 20px; font-weight: 600;">
+                                                    <i class="glyphicon glyphicon-th-list"></i> 成员列表
+                                                </a>
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <form method="post" action="{% url 'quit_club' club.id %}" class="action-form" onsubmit="return confirm('确定要退出该社团吗？')">{% csrf_token %}<button type="submit"  class="btn btn-link btn-block text-danger" >退出社团</button></form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <form method="post" action="{% url 'join_club' club.id %}" class="action-form">{% csrf_token %}<button type="submit"  class="btn btn-primary btn-lg btn-block" style="border-radius: 30px; font-weight: bold; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">
+                                        <i class="glyphicon glyphicon-plus"></i> 申请加入
+                                    </button></form>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-default btn-lg btn-block" style="border-radius: 30px;">登录后加入</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 50px; margin-bottom: 80px;">
+        <div class="col-md-10 col-md-offset-1">
+            <h3 class="page-header" style="border-bottom: 2px solid #3b82f6; padding-bottom: 10px; font-weight: 800;">
+                <i class="glyphicon glyphicon-fire" style="color: #ef4444;"></i> 近期活动
+            </h3>
+
+            {% if activities %}
+                <div class="row">
+                    {% for act in activities %}
+                    <div class="col-md-6">
+                        <div class="panel panel-default" style="border-radius: 12px; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div class="panel-body">
+                                <h4 style="font-weight: bold; margin-top: 0;">
+                                    <a href="{% url 'activity_detail' act.id %}" style="color: #1e293b; text-decoration: none;">{{ act.name }}</a>
+                                </h4>
+                                <div style="font-size: 13px; color: #64748b; margin-bottom: 15px;">
+                                    <i class="glyphicon glyphicon-calendar"></i> {{ act.start_time|date:"Y-m-d H:i" }}
+                                </div>
+                                <p class="text-muted" style="height: 40px; overflow: hidden; font-size: 14px;">{{ act.description|truncatechars:70 }}</p>
+
+                                <div style="margin-top: 15px;">
+                                    <small class="pull-right text-muted">{{ act.current_participants }}/{{ act.max_participants }}</small>
+                                    <div class="progress" style="height: 6px; margin-bottom: 0; border-radius: 3px;">
+                                        {% widthratio act.current_participants act.max_participants 100 as progress %}
+                                        <div class="progress-bar progress-bar-info" style="width: {{ progress }}%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-footer" style="background: transparent; border: none; padding-top: 0;">
+                                <a href="{% url 'activity_detail' act.id %}" class="btn btn-default btn-sm btn-block" style="border-radius: 15px;">查看详情</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center" style="padding: 40px; color: #94a3b8;">
+                    <p>该社团近期没有安排活动</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

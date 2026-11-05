@@ -1,0 +1,201 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}查看社团{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/hero.css' %}">
+<style>
+    /* 1. 布局修复：全屏英雄区域 */
+    .hero-section-full {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        margin-top: -20px;
+        border-radius: 0 !important;
+    }
+
+    /* 2. 侧边栏美化 */
+    .category-sidebar {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #f1f5f9;
+        padding: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .category-sidebar h4 {
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+    .category-list .list-group-item {
+        border: none;
+        margin-bottom: 5px;
+        border-radius: 8px !important;
+        color: #64748b;
+        transition: all 0.2s;
+    }
+    .category-list .list-group-item:hover {
+        background-color: #f8fafc;
+        color: #3b82f6;
+        padding-left: 25px;
+    }
+    .category-list .list-group-item.active {
+        background-color: #3b82f6 !important;
+        color: #fff !important;
+        font-weight: 600;
+    }
+
+    /* 3. 社团卡片美化 (沿用活动卡片风格) */
+    .club-grid { display: flex; flex-wrap: wrap; margin: 0 -15px; }
+    .club-item { padding: 15px; width: 33.33%; }
+    .club-card-modern {
+        background: #fff;
+        border: 1px solid #f1f5f9;
+        border-radius: 16px;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .club-card-modern:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+    .club-card-body { padding: 25px; flex-grow: 1; }
+    .club-card-title { font-size: 18px; margin-top: 0; font-weight: 800; color: #1e293b; }
+    .club-card-title a { color: inherit; text-decoration: none; transition: 0.2s; }
+    .club-card-title a:hover { color: #3b82f6; }
+
+    .club-info-tag {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+    .club-info-tag i { width: 20px; color: #94a3b8; }
+
+    @media (max-width: 992px) { .club-item { width: 50%; } }
+    @media (max-width: 768px) { .club-item { width: 100%; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero-section hero-section-full fade-in">
+    <div class="container text-center">
+        <h1 class="hero-title">社团名录</h1>
+        <p class="hero-lead">
+            共收录 {{ club_list.paginator.count }} 个官方认证社团，在这里开启你的校园社团生活。
+        </p>
+
+        <form role="form" method="GET" action="{% url 'view_club_list' %}" class="hero-search-container">
+            <div class="input-group">
+                <input type="text" class="form-control hero-search-input" name="keyword"
+                       value="{{ keyword|default:'' }}" placeholder="搜索社团名称或描述...">
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-primary" style="height: 50px; border-radius: 0 50px 50px 0; padding: 0 25px; background: #3b82f6; border: none;">
+                        <i class="glyphicon glyphicon-search"></i>
+                    </button>
+                </span>
+            </div>
+            {% if query_category and query_category != 'all' %}
+                <input type="hidden" name="category" value="{{ query_category }}">
+            {% endif %}
+        </form>
+    </div>
+</section>
+
+<div class="container" style="margin-top: 30px;">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="category-sidebar">
+                <h4><i class="glyphicon glyphicon-tasks"></i> 社团分类</h4>
+                <div class="list-group category-list">
+                    <a href="{% url 'view_club_list' %}{% if keyword %}?keyword={{ keyword }}{% endif %}"
+                       class="list-group-item {% if not query_category or query_category == 'all' %}active{% endif %}">
+                        <span class="glyphicon glyphicon-th-list"></span> 全部社团
+                    </a>
+                    {% for category in category_list %}
+                        <a href="{% url 'view_club_list' %}?category={{ category.0 }}{% if keyword %}&keyword={{ keyword }}{% endif %}"
+                           class="list-group-item {% if query_category == category.0 %}active{% endif %}">
+                            <i class="glyphicon glyphicon-tag"></i> {{ category.1 }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="club-grid">
+                {% if club_list %}
+                    {% for club in club_list %}
+                        <div class="club-item">
+                            <div class="club-card-modern">
+                                <div class="club-card-body">
+                                    <h3 class="club-card-title">
+                                        <a href="{% url 'club_detail' club.id %}">{{ club.name }}</a>
+                                    </h3>
+
+                                    <div style="margin: 15px 0;">
+                                        <div class="club-info-tag">
+                                            <i class="glyphicon glyphicon-user"></i> <b>社长：</b>
+                                            {{ club.president.nickname|default:"暂无" }}
+                                        </div>
+                                        <div class="club-info-tag">
+                                            <i class="glyphicon glyphicon-bookmark"></i> <b style="color: #f0ad4e">类别：</b>{{ club.category }}
+                                        </div>
+                                        <div class="club-info-tag">
+                                            <i class="glyphicon glyphicon-briefcase"></i> <b>规模：</b>{{ club.member_count }}人
+                                        </div>
+                                    </div>
+
+                                    <p class="text-muted small" style="height: 40px; overflow: hidden; line-height: 1.5;">
+                                        {{ club.detail|truncatechars:50 }}
+                                    </p>
+                                </div>
+
+                                <div style="padding: 15px 25px 25px;">
+                                    <a href="{% url 'club_detail' club.id %}" class="btn btn-default btn-block" style="border-radius: 10px; font-weight: 600; border: 1px solid #e2e8f0; transition: 0.3s;">
+                                        查看详情 &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-xs-12 text-center" style="padding: 100px 0; background: white; border-radius: 20px;">
+                        <i class="glyphicon glyphicon-info-sign" style="font-size: 50px; color: #e2e8f0;"></i>
+                        <h3 style="color: #94a3b8; margin-top: 20px;">未找到匹配的社团</h3>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if club_list.has_other_pages %}
+                <div class="text-center" style="margin-top: 30px; margin-bottom: 50px;">
+                    <ul class="pagination">
+                        {% if club_list.has_previous %}
+                            <li><a href="?page={{ club_list.previous_page_number }}{% if query_category %}&category={{ query_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">&laquo;</a></li>
+                        {% endif %}
+
+                        {% for i in club_list.paginator.page_range %}
+                            <li class="{% if club_list.number == i %}active{% endif %}">
+                                <a href="?page={{ i }}{% if query_category %}&category={{ query_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+
+                        {% if club_list.has_next %}
+                            <li><a href="?page={{ club_list.next_page_number }}{% if query_category %}&category={{ query_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

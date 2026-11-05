@@ -1,0 +1,175 @@
+{% extends "management/base.html" %}
+{% block title %}社长管理面板 - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="page-header">
+        <h1>管理面板 <small>{{ club.name }}</small></h1>
+    </div>
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#members" aria-controls="members" role="tab" data-toggle="tab">成员管理</a></li>
+        <li role="presentation"><a href="#gallery" aria-controls="gallery" role="tab" data-toggle="tab">社团风采管理</a></li>
+        <li role="presentation"><a href="#activities" aria-controls="activities" role="tab" data-toggle="tab">活动材料提交</a></li>
+        <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab">审批记录</a></li>
+    </ul>
+
+    <div class="tab-content" style="padding-top: 20px;">
+
+        <div role="tabpanel" class="tab-pane active" id="members">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>姓名/学号</th>
+                        <th style="width: 120px;">角色</th>
+                        <th>加入日期</th>
+                        <th style="width: 80px;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in members %}
+                    <tr>
+                        <td>{{ m.student.nickname }} ({{ m.student.student_id }})</td>
+                        <td>
+                            {% if m.role == 2 %}
+                                <span class="label label-danger">社长</span>
+                            {% else %}
+                                <span class="label label-info">普通成员</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ m.join_date|date:"Y-m-d" }}</td>
+                        <td>
+                            {# 只有非社长成员才显示移除按钮 #}
+                            {% if m.role != 2 %}
+                            <form method="post" action="{% url 'delete_member' m.id %}" onsubmit="return confirm('确定移除该成员并取消其活动报名？')">{% csrf_token %}<button type="submit" class="btn btn-link btn-xs" style="color: #ef4444; padding: 0;">移除</button></form>
+                            {% else %}
+                            <span class="text-muted" style="font-size: 12px;">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="gallery">
+            <div class="panel panel-default">
+                <div class="panel-heading">上传宣传照片</div>
+                <div class="panel-body">
+                    <form method="POST" action="{% url 'upload_club_images' club.id %}" enctype="multipart/form-data" class="form-inline">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input type="file" name="images" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">上传照片</button>
+                        <p class="help-block">支持多选。照片将展示在社团详情页的顶部轮播图中。</p>
+                    </form>
+                </div>
+            </div>
+
+            <h4 style="margin-top: 30px; font-weight: bold;">已上传的照片</h4>
+            <div class="row">
+                {% for img in club_images %}
+                <div class="col-sm-6 col-md-3">
+                    <div class="thumbnail">
+                        <img src="{{ img.image.url }}" style="height: 150px; width: 100%; object-fit: cover;">
+                        <div class="caption text-center">
+                            <form method="post" action="{% url 'delete_club_image' img.id %}" class="action-form" onsubmit="return confirm('确定删除这张照片吗？')">{% csrf_token %}<button type="submit"  class="btn btn-danger btn-xs" >删除</button></form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-xs-12 text-center text-muted" style="padding: 40px;">
+                    暂无照片，请先上传。
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="activities">
+            <div class="well">
+                <form method="POST" action="{% url 'submit_material' club.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>活动名称</label>
+                        <input type="text" name="name" class="form-control" placeholder="请输入活动名称" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>开始时间</label>
+                                <input type="datetime-local" name="start_time" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>结束时间</label>
+                                <input type="datetime-local" name="end_time" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>最大参与人数</label>
+                                <input type="number" name="max_participants" class="form-control" min="1" placeholder="例如: 50" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>宣传图片 (可多选)</label>
+                                <input type="file" name="images" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="form-control" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>申请附件 (PDF/Word/可多选)</label>
+                                <input type="file" name="annex" multiple class="form-control" accept=".pdf,.doc,.docx">
+                                <p class="help-block" style="font-size: 12px;">上传活动策划、申请表等文档</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>活动描述/详情</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="请详细描述活动流程、要求等..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-block">
+                        <i class="glyphicon glyphicon-send"></i> 提交审核
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="history">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>活动名称</th>
+                        <th>状态</th>
+                        <th>提交时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in activities %}
+                    <tr>
+                        <td>{{ a.name }}</td>
+                        <td>
+                            {% if a.status == 1 %}<span class="label label-warning">审核中</span>
+                            {% elif a.status == 2 %}<span class="label label-success">已通过</span>
+                            {% elif a.status == 3 %}<span class="label label-danger">已拒绝</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ a.start_time }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

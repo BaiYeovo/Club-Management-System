@@ -1,0 +1,123 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% block title %}用户登录{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/auth.css' %}">
+<style>
+    /* 补充一些基础样式，确保登录框居中且美观 */
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 200px); /* 减去导航和页脚高度 */
+    }
+    .login-card {
+        width: 100%;
+        max-width: 400px;
+        padding: 30px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .login-title {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #333;
+        font-weight: bold;
+    }
+    .btn-login {
+        width: 100%;
+        padding: 12px;
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: background 0.3s;
+    }
+    .btn-login:hover { background-color: #357abd; }
+    .register-link { text-align: center; margin-top: 20px; color: #666; }
+
+    /* 针对表单组的动画 */
+    .form-group.focused .form-label { color: #4a90e2; }
+    .input-group-addon { cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card fade-in">
+        <h1 class="login-title">社团系统登录</h1>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                <div class="alert alert-danger" style="margin-bottom: 20px; padding: 10px;">
+                    <i class="glyphicon glyphicon-exclamation-sign"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}" role="form" class="login-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_student_id" class="form-label">学号</label>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                    <input type="text" class="form-control" id="id_student_id" required name="student_id"
+                           autofocus placeholder="请输入学号">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="id_password" class="form-label">密码</label>
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                    <input type="password" class="form-control" required name="password" id="id_password"
+                           placeholder="请输入密码">
+                    <span class="input-group-addon" id="togglePassword">
+                        <i class="glyphicon glyphicon-eye-open"></i>
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login">
+                <i class="glyphicon glyphicon-log-in"></i> 立即登录
+            </button>
+
+            <div class="register-link">
+                还没有账号？ <a href="{% url 'signup' %}">立即注册</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        // 1. 输入框焦点效果
+        $('.form-control').on('focus', function() {
+            $(this).closest('.form-group').addClass('focused');
+        }).on('blur', function() {
+            $(this).closest('.form-group').removeClass('focused');
+        });
+
+        // 2. 密码可见性切换
+        $('#togglePassword').on('click', function() {
+            const passwordField = $('#id_password');
+            const icon = $(this).find('i');
+            if (passwordField.attr('type') === 'password') {
+                passwordField.attr('type', 'text');
+                icon.removeClass('glyphicon-eye-open').addClass('glyphicon-eye-close');
+            } else {
+                passwordField.attr('type', 'password');
+                icon.removeClass('glyphicon-eye-close').addClass('glyphicon-eye-open');
+            }
+        });
+    });
+</script>
+{% endblock %}

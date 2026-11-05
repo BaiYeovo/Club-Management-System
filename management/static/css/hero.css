@@ -1,0 +1,85 @@
+/* static/css/hero.css */
+
+/* 基础动画 */
+.fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 核心英雄区域容器 */
+.hero-section {
+    background: linear-gradient(120deg, #e0f2fe 0%, #f0f9ff 45%, #f5f3ff 100%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    padding: 80px 0;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+/* 全屏扩展类：修复滚动条溢出 */
+.hero-section-full {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-top: -20px; /* 抵消顶层 container 的默认间距 */
+    box-sizing: border-box;
+}
+
+/* 标题与描述 */
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: -1.5px;
+    margin-bottom: 20px;
+}
+
+.hero-lead {
+    font-size: 1.25rem;
+    color: #64748b;
+    max-width: 700px;
+    margin: 0 auto 40px auto;
+    line-height: 1.6;
+}
+
+/* 统一搜索框样式 */
+.hero-search-container {
+    max-width: 650px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.hero-search-input {
+    border-radius: 50px !important;
+    padding-left: 25px !important;
+    height: 55px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+    font-size: 16px !important;
+}
+
+.hero-search-input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* 按钮通用样式 */
+.btn-round {
+    border-radius: 30px;
+    padding: 12px 35px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.5rem; }
+    .hero-section { padding: 50px 0; }
+    .hero-section-full { margin-top: -15px; }
+}
